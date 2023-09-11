@@ -8,10 +8,6 @@ const chalk = require('chalk')
 const figlet = require('figlet')
 const FileType = require('file-type')
 const path = require('path')
-const PhoneNumber = require('awesome-phonenumber')
-const { color, bgcolor, mycolor } = require('../js/lib/color')
-const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('../js/lib/exif')
-const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, await, sleep } = require('../js/lib/functions')
 const {
    toBuffer,
    toDataURL
@@ -20,6 +16,10 @@ const express = require('express')
 let app = express()
 let _qr = 'invalid'
 let PORT = process.env.PORT
+const PhoneNumber = require('awesome-phonenumber')
+const { color, bgcolor, mycolor } = require('../js/lib/color')
+const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('../js/lib/exif')
+const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, await, sleep } = require('../js/lib/functions')
 const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) })
 const vcard = 'BEGIN:VCARD\n' // metadata of the contact card
             + 'VERSION:3.0\n' 
@@ -37,7 +37,7 @@ const vcard = 'BEGIN:VCARD\n' // metadata of the contact card
               
                pritprit = {
                   text: 'sepertinya kamu belum daftar resseler',
-                  footer: '��ComotBotz-Md���',
+                  footer: '©ComotBotz-Mdོ',
                   buttons: prit,
                   headerType: 1
               }
@@ -54,8 +54,6 @@ version
 })
 
 store.bind(comot.ev)
-
-console.log(color('[ HAI KAK ]\n', 'red'),color('\n���� WELCOME TO COMOT MD\n', 'red'))
 
 comot.ev.on('messages.upsert', async chatUpdate => {
 try {
@@ -127,7 +125,7 @@ comot.public = true
 comot.serializeM = (m) => smsg(comot, m, store)
 
     comot.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, qr } = update	 
+        const { connection, lastDisconnect, qr } = update
         if (qr) {
          app.use(async (req, res) => {
             res.setHeader('content-type', 'image/png')
@@ -137,20 +135,19 @@ comot.serializeM = (m) => smsg(comot, m, store)
          app.listen(PORT, () => {
             console.log('scan qr di webview untuk pengguna replit')
          })
-      }
+      }	    
         if (connection === 'close') {
         let reason = new Boom(lastDisconnect?.error)?.output.statusCode
             if (reason === DisconnectReason.badSession) { console.log(`Bad Session File, Please Delete Session and Scan Again`); comot.logout(); }
             else if (reason === DisconnectReason.connectionClosed) { console.log("Connection closed, reconnecting...."); startcomot(); }
             else if (reason === DisconnectReason.connectionLost) { console.log("Connection Lost from Server, reconnecting..."); startcomot(); }
-            else if (reason === DisconnectReason.connectionReplaced) { console.log("Connection Replaced, Another New Session Opened, reconnecting..."); startcomot(); }
+            else if (reason === DisconnectReason.connectionReplaced) { console.log("Connection Replaced, Another New Session Opened, Please Close Current Session First"); comot.logout(); }
             else if (reason === DisconnectReason.loggedOut) { console.log(`Device Logged Out, Please Scan Again And Run.`); comot.logout(); }
             else if (reason === DisconnectReason.restartRequired) { console.log("Restart Required, Restarting..."); startcomot(); }
             else if (reason === DisconnectReason.timedOut) { console.log("Connection TimedOut, Reconnecting..."); startcomot(); }
-            else if (reason === DisconnectReason.Multidevicemismatch) { console.log("Multi device mismatch, please scan again"); comot.logout(); }
             else comot.end(`Unknown DisconnectReason: ${reason}|${connection}`)
         }
-        if (update.connection == "open" || update.receivedPendingNotifications == "true")
+        console.log('Connected...', update)
     })
 
 comot.send5ButGif = async (jid , text = '' , footer = '', but = [], options = {}) =>{
