@@ -90,7 +90,7 @@ await comot.sendMessage(m.chat, {
 
 }
 
-    if (m.isGroup) {
+    if (m.message) {
             comot.readMessages([m.key])
         }
 
@@ -120,22 +120,17 @@ case '🍋owner':
 reply('wa.me/6283838077485 not spam')
 break
 case '🍋menu': {
-reply('𝗣𝗿𝗼𝗰𝗰𝗲𝘀')
 menu =`𝙈𝙀𝙉𝙐
+${runtime(process.uptime())}
 => ${prefix}owner [pembuat bot]
-
-𝙂𝙍𝙊𝙐𝙋 𝙈𝙀𝙉𝙐
 => ${prefix}antilink [on/off]
 => ${prefix}group [open/close]
 => ${prefix}kick [reply/tag]
 => ${prefix}hidetag [text]
-
-𝘾𝙊𝙉𝙑𝙀𝙍𝙏 𝙈𝙀𝙉𝙐
-=> ${prefix}sticker [image]
 => ${prefix}tourl [image]
-
-𝘿𝙊𝙒𝙉𝙇𝙊𝘼𝘿 𝙈𝙀𝙉𝙐
-=> ${prefix}tiktok [link]`
+=> ${prefix}tiktok [link]
+=> ${prefix}qc [text]
+=> ${prefix}sticker [image]`
 comot.sendMessage(m.chat, {
 text: menu,
 contextInfo: {  forwardingScore: 9999,
@@ -147,6 +142,21 @@ sourceUrl: gr,
 mediaType: 0,
 renderLargerThumbnail: true
 }}}, { quoted: m})
+}
+break
+case '🍋tourl': {
+if (!/video/.test(mime) && !/image/.test(mime)) throw `${petik}❎ Kirim/Balas Video/Gambar Dengan Caption ${prefix + command}${petik}`
+if (!quoted) throw `${petik}❎ Kirim/Balas Keterangan Video/Gambar ${prefix + command}${petik}`
+let { UploadFileUgu, webp2mp4File, TelegraPh } = require('./lib/uploader')
+let media = await comot.downloadAndSaveMediaMessage(quoted)
+if (/image/.test(mime)) {
+let anu = await TelegraPh(media)
+m.reply(util.format(anu))
+} else if (!/image/.test(mime)) {
+let anu = await UploadFileUgu(media)
+m.reply(util.format(anu))
+}
+await fs.unlinkSync(media)
 }
 break
 case '🍋sticker': {
@@ -173,21 +183,6 @@ let tik = await fetchJson(`https://api.tiklydown.me/api/download?url=${q}`)
 let vidtik = await comot.sendMessage(from, { video: { url: tik.video.noWatermark }, caption: `${petik}✅ Done sis !!${petik}` }, { quoted: m })
 }
 break
-case '🍋tourl': {
-if (!/video/.test(mime) && !/image/.test(mime)) throw `${petik}❎ Kirim/Balas Video/Gambar Dengan Caption ${prefix + command}${petik}`
-if (!quoted) throw `${petik}❎ Kirim/Balas Keterangan Video/Gambar ${prefix + command}${petik}`
-let { UploadFileUgu, webp2mp4File, TelegraPh } = require('./lib/uploader')
-let media = await comot.downloadAndSaveMediaMessage(quoted)
-if (/image/.test(mime)) {
-let anu = await TelegraPh(media)
-m.reply(util.format(anu))
-} else if (!/image/.test(mime)) {
-let anu = await UploadFileUgu(media)
-m.reply(util.format(anu))
-}
-await fs.unlinkSync(media)
-}
-break
 case '🍋hidetag': {
 if (!isCreator) return m.reply(mess.owner)
 if (!m.isGroup) return m.reply(mess.group)
@@ -195,7 +190,6 @@ if (!text) return m.reply(`${petik}Text?${petik}`)
 comot.sendMessage(from, { text : q ? q : '' , mentions: participants.map(a => a.id)}, { quoted:m })
 }
 break
-
 case '🍋group': {
 if (!isGroup) return m.reply(mess.group)
 if (!isAdmins) return m.reply(mess.admin)
@@ -234,6 +228,14 @@ function generateRandomPassword() {
   return Array(10).fill(null).map(() => (Math.random() * 16 | 0).toString(16)).join('');
 }
 break
+case '🍋join': {
+if (!isCreator) return (mess.owner)
+if (!text) throw 'Masukkan Link Group!'
+if (!isUrl(args[0]) && !args[0].includes('chat.whatsapp.com/')) throw 'Link Invalid!'
+let result = args[0].split('https://chat.whatsapp.com/')[1]
+await comot.groupAcceptInvite(result).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+}
+break
 case '🍋kick': {
 if (!isCreator) return m.reply(mess.owner)
 if (!m.isGroup) return m.reply(mess.group)
@@ -243,8 +245,75 @@ let users = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender :
 await comot.groupParticipantsUpdate(from, [users], 'remove').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
 m.reply(`${petik}🌷 Done, Kasihan Bjir Di Kick !!${petik}`)
 }
-
-
+break
+case "🍋qc": {
+if (!quoted){
+const getname = await comot.getName(mentionUser[0])
+const json = {
+"type": "quote",
+"format": "png",
+"backgroundColor": "#FFFFFF",
+"width": 512,
+"height": 768,
+"scale": 2,
+"messages": [
+{
+"entities": [],
+"avatar": true,
+"from": {
+"id": 1,
+"name": getname,
+"photo": {
+"url": ppuser
+}
+},
+"text": quotedMsg.chats,
+"replyMessage": {}
+}
+]
+};
+const response = axios.post('https://bot.lyo.su/quote/generate', json, {
+headers: {'Content-Type': 'application/json'}
+}).then(res => {
+const buffer = Buffer.from(res.data.result.image, 'base64')
+const opt = { packname: global.packname, author: global.author }
+comot.sendImageAsSticker(from, buffer, m, opt)
+});
+} else if (q) {
+const json = {
+"type": "quote",
+"format": "png",
+"backgroundColor": "#FFFFFF",
+"width": 512,
+"height": 768,
+"scale": 2,
+"messages": [
+{
+"entities": [],
+"avatar": true,
+"from": {
+"id": 1,
+"name": pushname,
+"photo": {
+"url": ppuser
+}
+},
+"text": q,
+"replyMessage": {}
+}
+]
+};
+const response = axios.post('https://bot.lyo.su/quote/generate', json, {
+headers: {'Content-Type': 'application/json'}
+}).then(res => {
+const buffer = Buffer.from(res.data.result.image, 'base64')
+const opt = { packname: global.packname, author: global.author }
+comot.sendImageAsSticker(from, buffer, m, opt)
+});
+} else {
+reply(`${petik}❎ Example ${prefix}${command}${petik}`)
+}
+}
 break
 
 default:
