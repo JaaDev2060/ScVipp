@@ -87,50 +87,6 @@ if (store && store.contacts) store.contacts[id] = { id, name: contact.notify }
 }
 })
 
-comot.ev.on('group-participants.update', async (anu) => {
-if (!wlcm.includes(anu.id)) return
-console.log(anu)
-try {
-let metadata = await comot.groupMetadata(anu.id)
-let participants = anu.participants
-for (let num of participants) {
-// Get Profile Picture User
-try {
-ppuser = await comot.profilePictureUrl(num, 'image')
-} catch {
-ppuser = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png?q=60'
-}
-
-// Get Profile Picture Group
-try {
-ppgroup = await comot.profilePictureUrl(anu.id, 'image')
-} catch {
-ppgroup = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png?q=60'
-}
-
-if (anu.action == 'add') {
-comot.sendMessage(anu.id, { image: { url: ppuser }, mentions: [num], caption: `Haii Kak Kontol *@${num.split("@")[0]}* Selamat Datang Di Group *${metadata.subject}* 👋
- ▬▭▬▭▬▭▬▭▬▬▭▬▭▬
-Terima Kasih Sudah Bergabung Jangan Lupa Baca Deskripsi Yah
-▬▭▬▭▬▭▬▭▬▬▭▬▭▬
-Creator : https://wa.me/6283838077485`})
-} else if (anu.action == 'remove') {
-comot.sendMessage(anu.id, { image: { url: ppuser }, mentions: [num], caption: `Karena Untuk Setiap Ucapan Selamat Datang Akan Selalu Diakhiri Dengan Ucapan Selamat Tinggal Jangan Kembali Lagi Ya Anak Anjeang👉😂👈
-▬▭▬▭▬▭▬▭▬▬▭▬▭▬
-Selamat Tinggal *@${num.split("@")[0]}* Di Group *${metadata.subject}*
-▬▭▬▭▬▭▬▭▬▬▭▬▭▬
-Creator : https://wa.me/6285711324080`})
-} else if (anu.action == 'promote') {
-comot.sendMessage(anu.id, { image: { url: ppuser }, mentions: [num], caption: `@${num.split('@')[0]} Ciee Jadi Admin Di Group Wkwkwk Bisa Kali Traktir Bakso Uhuy🤧 ${metadata.subject} ${metadata.desc}`  })
-} else if (anu.action == 'demote') {
-comot.sendMessage(anu.id, { image: { url: ppuser }, mentions: [num], caption: `@${num.split('@')[0]} Wkwkwkwk Mampus Lu Di Turunin Bukan Jadi Admin Lagi Wkwkkwwkkw ${metadata.subject} ${metadata.desc}`})
-  }
-}
-} catch (err) {
-console.log(err)
-}
-})
-
 comot.getName = (jid, withoutContact= false) => {
 id = comot.decodeJid(jid)
 withoutContact = comot.withoutContact || withoutContact 
